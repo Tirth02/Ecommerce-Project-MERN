@@ -39,7 +39,18 @@ export const ShopContextProvider = (props) => {
             cartData[itemId] = {};
             cartData[itemId][size] = 1;
         }
-        setCartItems(cartData)
+        setCartItems(cartData);
+        if(token)
+        {
+            try {
+                await axios.post(backendUrl+'/api/cart/add',{itemId,size},{headers:{token}});
+
+
+            } catch (error) {
+                console.log(error);
+                toast.error(error.message)
+            }
+        }
     } 
     
     const getCartCount = () => {
@@ -67,6 +78,16 @@ export const ShopContextProvider = (props) => {
         cartData[itemId][size] = quantity;
 
         setCartItems(cartData);
+
+        if(token)
+        {
+            try {
+                await axios.post(backendUrl+'/api/cart/update', {itemId,size,quantity},{headers:{token}});
+            } catch (error) {
+                console.log(error);
+                toast.error(error.message);
+            }
+        }
     }
 
     const getCartAmount = () => {
@@ -78,7 +99,7 @@ export const ShopContextProvider = (props) => {
             for(const item in cartItems[items])
             {
                 try {
-                    if(cartItems[items][item] > 0)
+                    if(itemInfo && cartItems[items][item] > 0)
                     {
                         totalAmount += itemInfo.price * cartItems[items][item];
                     }
@@ -109,6 +130,22 @@ export const ShopContextProvider = (props) => {
         }
     }
 
+    const getUserCart = async(token) => {
+        try {
+            console.log("Token in getUserCart function",token);
+            const response = await axios.post(backendUrl+'/api/cart/get',{},{headers:{token}});
+            console.log(response.data);
+            if(response.data.success)
+            {
+                setCartItems(response.data.cartData);
+            }
+            
+        } catch (error) {
+            console.log(error);
+            toast.error(error.message);
+        }
+    }
+
     useEffect(() => {
         getProductData();
     },[])
@@ -116,6 +153,7 @@ export const ShopContextProvider = (props) => {
         if(!token && localStorage.getItem("token"))
         {
             setToken(localStorage.getItem("token"));
+            getUserCart(localStorage.getItem("token"))
         }
     },[])
     const value = {
