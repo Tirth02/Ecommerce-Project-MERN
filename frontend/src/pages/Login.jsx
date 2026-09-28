@@ -30,7 +30,6 @@ const Login = () => {
         else
         {
           const response = await axios.post(backendUrl + '/api/user/login', {email,password})
-          console.log(response.data);
           if(response.data.success)
           {
             setToken(response.data.token);
